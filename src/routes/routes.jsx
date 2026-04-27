@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
+import Attendance from "../pages/Attendance";
 import { getToken } from "../utils/auth";
 
 // 🔒 Protected Route
@@ -15,10 +16,10 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
 
-        {/* Login Page */}
+        {/* Login */}
         <Route path="/" element={<Login />} />
 
-        {/* Protected Dashboard */}
+        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={
@@ -27,6 +28,19 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        {/* Attendance */}
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute>
+              <Attendance />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default Redirect */}
+        <Route path="*" element={<Navigate to="/dashboard" />} />
 
       </Routes>
     </BrowserRouter>
