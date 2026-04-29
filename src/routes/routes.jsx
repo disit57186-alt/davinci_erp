@@ -1,14 +1,14 @@
 // src/routes/routes.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
-import Attendance from "../pages/Attendance";
+import Attendance from "../pages/Attendance/Attendance";
+
 import { getToken } from "../utils/auth";
 
-// 🔒 Protected Route
 function ProtectedRoute({ children }) {
-  const token = getToken();
-  return token ? children : <Navigate to="/" replace />;
+  return getToken() ? children : <Navigate to="/" />;
 }
 
 export default function AppRoutes() {
@@ -16,30 +16,23 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
 
-        {/* Login */}
-        <Route path="/" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            getToken() ? <Navigate to="/dashboard" /> : <Login />
+          }
+        />
 
-        {/* Dashboard */}
         <Route
           path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
         />
 
-        {/* Attendance */}
         <Route
           path="/attendance"
-          element={
-            <ProtectedRoute>
-              <Attendance />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute><Attendance /></ProtectedRoute>}
         />
 
-        {/* Default Redirect */}
         <Route path="*" element={<Navigate to="/dashboard" />} />
 
       </Routes>

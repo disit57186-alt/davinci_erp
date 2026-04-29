@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GraduationCap, Eye, EyeOff } from "lucide-react";
 import api from "../api/axios";
-import { setToken } from "../utils/auth";
+import { setAuth, isAuthenticated } from "../utils/auth";
 
 export default function Login() {
   const [email, setEmail] = useState(
@@ -17,6 +17,14 @@ export default function Login() {
 
   const navigate = useNavigate();
 
+  // ✅ Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/dashboard");
+    }
+  }, []);
+
+  // ✅ Focus email
   useEffect(() => {
     document.getElementById("email")?.focus();
   }, []);
@@ -38,13 +46,15 @@ export default function Login() {
         password,
       });
 
-      const token = res.data?.data?.token;
+      const data = res.data?.data;
 
-      if (!token) {
-        throw new Error("Token not received");
+      if (!data?.token) {
+        setError("Invalid login response");
+        return;
       }
 
-      setToken(token);
+      // ✅ Save auth correctly
+      setAuth(data);
 
       // Remember email
       if (rememberMe) {
@@ -53,11 +63,18 @@ export default function Login() {
         localStorage.removeItem("savedEmail");
       }
 
+      // ✅ Navigate ONLY on success
       navigate("/dashboard");
+
     } catch (err) {
+      console.log(err);
+
+      setPassword("");
+
       setError(
-        err.response?.data?.message || "Login failed. Try again."
+        err.response?.data?.message || "Invalid email or password"
       );
+
     } finally {
       setLoading(false);
     }
@@ -67,7 +84,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-700 to-gray-300">
       <div className="bg-white w-96 p-8 rounded-2xl shadow-xl">
 
-        {/* Icon */}
+        {/* Logo */}
         <div className="flex justify-center mb-4 text-blue-600">
           <GraduationCap size={36} />
         </div>
@@ -109,7 +126,7 @@ export default function Login() {
             </span>
           </div>
 
-          {/* Remember Me */}
+          {/* Remember */}
           <div className="flex items-center mb-3">
             <input
               type="checkbox"
@@ -123,7 +140,7 @@ export default function Login() {
           {/* Button */}
           <button
             disabled={loading}
-            className="w-full bg-blue-600 text-white p-2 rounded-lg"
+            className="w-full bg-blue-600 text-white p-2 rounded-lg disabled:opacity-50"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
@@ -134,6 +151,7 @@ export default function Login() {
               {error}
             </p>
           )}
+
         </form>
       </div>
     </div>

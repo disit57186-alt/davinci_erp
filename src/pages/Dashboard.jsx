@@ -1,10 +1,10 @@
-// src/pages/Dashboard.jsx
 import { useEffect, useState } from "react";
 import Layout from "../components/Layout";
 import api from "../api/axios";
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   // 🔥 State
   const [presence, setPresence] = useState({});
@@ -14,31 +14,53 @@ export default function Dashboard() {
   const [recon, setRecon] = useState({});
   const [earlyExits, setEarlyExits] = useState([]);
 
-  // 🚀 Fetch ALL data
+  // 🚀 SAFE FETCH (NO CRASH)
   const fetchDashboard = async () => {
+    setLoading(true);
+    setApiError("");
+
     try {
-      setLoading(true);
+      const summaryRes = await api
+        .get("/dashboard/summary")
+        .catch((err) => {
+          console.log("summary error:", err);
+          return { data: { data: {} } };
+        });
 
-      const [summaryRes, transportRes, reconRes, earlyRes] =
-        await Promise.all([
-          api.get("/dashboard/summary"),
-          api.get("/dashboard/transport-breakdown"),
-          api.get("/dashboard/reconciliation"),
-          api.get("/dashboard/early-exits"),
-        ]);
+      const transportRes = await api
+        .get("/dashboard/transport-breakdown")
+        .catch((err) => {
+          console.log("transport error:", err);
+          return { data: { data: [] } };
+        });
 
-      const summary = summaryRes.data?.data;
+      const reconRes = await api
+        .get("/dashboard/reconciliation")
+        .catch((err) => {
+          console.log("recon error:", err);
+          return { data: { data: {} } };
+        });
 
-      setPresence(summary?.presence || {});
-      setClassData(summary?.classBreakdown || []);
-      setLateEntries(summary?.recentLateEntries || []);
+      const earlyRes = await api
+        .get("/dashboard/early-exits")
+        .catch((err) => {
+          console.log("early exits error:", err);
+          return { data: { data: [] } };
+        });
+
+      const summary = summaryRes.data?.data || {};
+
+      setPresence(summary.presence || {});
+      setClassData(summary.classBreakdown || []);
+      setLateEntries(summary.recentLateEntries || []);
 
       setTransport(transportRes.data?.data || []);
       setRecon(reconRes.data?.data || {});
       setEarlyExits(earlyRes.data?.data || []);
 
     } catch (err) {
-      console.log(err);
+      console.log("Dashboard error:", err);
+      setApiError("Server error. Please try later.");
     } finally {
       setLoading(false);
     }
@@ -56,6 +78,16 @@ export default function Dashboard() {
       <p className="text-gray-500 mb-6">
         Overview of today's attendance
       </p>
+
+      {/* ERROR */}
+      {apiError && (
+        <p className="text-red-500 mb-4">{apiError}</p>
+      )}
+
+      {/* LOADING */}
+      {loading && (
+        <p className="text-blue-500 mb-4">Loading dashboard...</p>
+      )}
 
       {/* 🔥 TOP CARDS */}
       <div className="grid grid-cols-4 gap-4 mb-6">
@@ -83,15 +115,23 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {classData.map((c, i) => (
-                <tr key={i} className="border-t">
-                  <td className="p-2">{c.class}</td>
-                  <td>{c.section}</td>
-                  <td>{c.present}</td>
-                  <td>{c.absent}</td>
-                  <td>{c.attendancePercentage}%</td>
+              {classData.length ? (
+                classData.map((c, i) => (
+                  <tr key={i} className="border-t">
+                    <td className="p-2">{c.class}</td>
+                    <td>{c.section}</td>
+                    <td>{c.present}</td>
+                    <td>{c.absent}</td>
+                    <td>{c.attendancePercentage}%</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center p-3 text-gray-500">
+                    No Data
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </Section>
@@ -127,15 +167,23 @@ export default function Dashboard() {
             </tr>
           </thead>
           <tbody>
-            {transport.map((t, i) => (
-              <tr key={i} className="border-t">
-                <td className="p-2">{t.transportMode}</td>
-                <td>{t.registeredStudents}</td>
-                <td>{t.totalEntered}</td>
-                <td>{t.lateEntryCount}</td>
-                <td className="text-blue-600">{t.reconciliationStatus}</td>
+            {transport.length ? (
+              transport.map((t, i) => (
+                <tr key={i} className="border-t">
+                  <td className="p-2">{t.transportMode}</td>
+                  <td>{t.registeredStudents}</td>
+                  <td>{t.totalEntered}</td>
+                  <td>{t.lateEntryCount}</td>
+                  <td className="text-blue-600">{t.reconciliationStatus}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center p-3 text-gray-500">
+                  No Data
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </Section>
@@ -168,10 +216,7 @@ export default function Dashboard() {
   );
 }
 
-//
-// 🔥 SMALL REUSABLE COMPONENTS (CLEAN STRUCTURE)
-//
-
+// 🔥 CARD COMPONENT
 function Card({ title, value = 0, color = "black" }) {
   return (
     <div className="bg-white p-4 rounded-xl shadow">
@@ -183,6 +228,7 @@ function Card({ title, value = 0, color = "black" }) {
   );
 }
 
+// 🔥 SECTION COMPONENT
 function Section({ title, children, className = "" }) {
   return (
     <div className={`bg-white p-4 rounded-xl shadow ${className}`}>
