@@ -5,7 +5,7 @@ import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import Attendance from "../pages/Attendance/Attendance";
 import LateEntry from "../pages/LateEntry/LateEntry";
-
+import EarlyExit from "../pages/EarlyExit/EarlyExit";
 import { getToken } from "../utils/auth";
 
 function ProtectedRoute({ children }) {
@@ -41,6 +41,12 @@ export default function AppRoutes() {
         <Route
           path="/late-entry"
           element={<ProtectedRoute><LateEntry /></ProtectedRoute>}
+        />
+
+        {/* ✅ Early exit (NO CHILD ROUTES NOW) */}
+        <Route
+          path="/early-exit"
+          element={<ProtectedRoute><EarlyExit /></ProtectedRoute>}
         />
 
         {/* Fallback */}
