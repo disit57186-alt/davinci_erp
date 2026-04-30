@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "../pages/Login";
 import Dashboard from "../pages/Dashboard";
 import Attendance from "../pages/Attendance/Attendance";
+import LateEntry from "../pages/LateEntry/LateEntry";
 
 import { getToken } from "../utils/auth";
 
@@ -16,6 +17,7 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
 
+        {/* Login */}
         <Route
           path="/"
           element={
@@ -23,16 +25,25 @@ export default function AppRoutes() {
           }
         />
 
+        {/* Dashboard */}
         <Route
           path="/dashboard"
           element={<ProtectedRoute><Dashboard /></ProtectedRoute>}
         />
 
+        {/* Attendance */}
         <Route
           path="/attendance"
           element={<ProtectedRoute><Attendance /></ProtectedRoute>}
         />
 
+        {/* ✅ Late Entry (NO CHILD ROUTES NOW) */}
+        <Route
+          path="/late-entry"
+          element={<ProtectedRoute><LateEntry /></ProtectedRoute>}
+        />
+
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/dashboard" />} />
 
       </Routes>
