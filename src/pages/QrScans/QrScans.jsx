@@ -1,21 +1,21 @@
+// src/pages/QrScans/QrScans.jsx
 import { useState } from "react";
 import Layout from "../../components/Layout";
 
-import LateList from "./LateList";
-import AddLate from "./AddLate";
-import ApproveLate from "./ApproveLate";
-import CheckLate from "./CheckLate";
+import TodayScans from "./TodayScans";
+import ScanByUrn from "./ScanByUrn";
+import BusScans from "./BusScans";
+import QRScanner from "./QRScanner"; // ✅ NEW
 
-export default function LateEntry() {
-  const [tab, setTab] = useState("list");
+export default function QrScans() {
+  const [tab, setTab] = useState("today");
 
   const renderTab = () => {
     switch (tab) {
-      case "list": return <LateList />;
-      case "add": return <AddLate />;
-      case "approve": return <ApproveLate />;
-      case "check": return <CheckLate />;
-      default: return <LateList />;
+      case "urn": return <ScanByUrn />;
+      case "bus": return <BusScans />;
+      case "scanner": return <QRScanner />; // ✅ NEW
+      default: return <TodayScans />;
     }
   };
 
@@ -25,24 +25,24 @@ export default function LateEntry() {
       {/* 🔥 HEADER */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
-          ⏰ Late Entry Management
+          📷 QR Scan Monitoring
         </h1>
         <p className="text-gray-500 text-sm">
-          Manage student late arrivals and approvals
+          Track student entry and exit scans in real-time
         </p>
       </div>
 
-      {/* 🎨 TABS (CARD STYLE) */}
+      {/* 🎨 TABS */}
       <div className="bg-white p-3 rounded-xl shadow mb-4 flex flex-wrap gap-2">
 
-        <Tab label="📋 Late List" value="list" tab={tab} setTab={setTab} />
-        <Tab label="➕ Add Late" value="add" tab={tab} setTab={setTab} />
-        <Tab label="✅ Approve" value="approve" tab={tab} setTab={setTab} />
-        <Tab label="🔍 Check URN" value="check" tab={tab} setTab={setTab} />
+        <Tab label="📅 Today Scans" value="today" tab={tab} setTab={setTab} />
+        <Tab label="🔍 Search URN" value="urn" tab={tab} setTab={setTab} />
+        <Tab label="🚌 Bus Tracking" value="bus" tab={tab} setTab={setTab} />
+        <Tab label="📷 Scanner" value="scanner" tab={tab} setTab={setTab} /> {/* ✅ NEW */}
 
       </div>
 
-      {/* 📦 CONTENT CARD */}
+      {/* 📦 CONTENT */}
       <div className="bg-white rounded-xl shadow p-5 min-h-[300px]">
         {renderTab()}
       </div>
@@ -51,7 +51,7 @@ export default function LateEntry() {
   );
 }
 
-/* 🎨 IMPROVED TAB UI */
+/* 🎨 TAB UI */
 function Tab({ label, value, tab, setTab }) {
   const isActive = tab === value;
 

@@ -3,12 +3,12 @@ import api from "../../api/axios";
 
 export default function CheckEarlyExit() {
   const [urn, setUrn] = useState("");
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleCheck = async () => {
-    if (!urn) {
-      alert("Enter URN");
+    if (!urn || isNaN(urn)) {
+      alert("Enter valid URN");
       return;
     }
 
@@ -16,19 +16,12 @@ export default function CheckEarlyExit() {
       setLoading(true);
 
       const res = await api.get(`/early-exits/check/${urn}`);
-
-      // ⚠️ API returns string in data
-      setResult(res.data?.data || "No record found");
-
-      console.log("Check Response:", res.data);
+      setResult(res.data?.data);
 
     } catch (err) {
-      console.log(err);
-      setResult("");
-      alert(
-        err.response?.data?.message ||
-        "Check failed"
-      );
+      console.error(err);
+      setResult(null);
+      alert(err?.response?.data?.message || "Check failed");
     } finally {
       setLoading(false);
     }
@@ -37,9 +30,8 @@ export default function CheckEarlyExit() {
   return (
     <div className="max-w-md flex flex-col gap-3">
 
-      <h2 className="font-bold">Check Early Exit by URN</h2>
+      <h2 className="font-bold">Check Early Exit</h2>
 
-      {/* URN INPUT */}
       <input
         placeholder="Enter URN"
         value={urn}
@@ -47,7 +39,6 @@ export default function CheckEarlyExit() {
         className="border p-2"
       />
 
-      {/* BUTTON */}
       <button
         onClick={handleCheck}
         disabled={loading}
@@ -56,13 +47,60 @@ export default function CheckEarlyExit() {
         {loading ? "Checking..." : "Check"}
       </button>
 
-      {/* RESULT */}
+      {/* ✅ RESULT CARD */}
       {result && (
-        <div className="bg-gray-100 p-3 rounded mt-3 text-sm">
-          {result}
+        <div className="bg-white shadow rounded-xl p-4 mt-3 space-y-2">
+
+          <p><b>URN:</b> {result.urn}</p>
+
+          <Status
+            label="Entered Today"
+            value={result.hasEnteredToday}
+          />
+
+          <Status
+            label="Active Exit Today"
+            value={result.hasActiveExitToday}
+          />
+
+          <p>
+            <b>Weekly Exits:</b> {result.weeklyExitCount}
+          </p>
+
+          {/* 🔥 Main Decision */}
+          <div
+            className={`p-3 rounded text-center font-semibold ${
+              result.canCreateEarlyExit
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
+          >
+            {result.canCreateEarlyExit
+              ? "✅ Eligible for Early Exit"
+              : "❌ Not Allowed for Early Exit"}
+          </div>
+
         </div>
       )}
 
+    </div>
+  );
+}
+
+/* 🔥 Small reusable status */
+function Status({ label, value }) {
+  return (
+    <div className="flex justify-between">
+      <span>{label}</span>
+      <span
+        className={
+          value
+            ? "text-green-600 font-semibold"
+            : "text-red-600 font-semibold"
+        }
+      >
+        {value ? "Yes" : "No"}
+      </span>
     </div>
   );
 }
